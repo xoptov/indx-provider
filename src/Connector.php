@@ -2,8 +2,10 @@
 
 namespace Xoptov\INDXConnector;
 
+use DateTime;
 use StdClass;
 use XMLReader;
+use XMLWriter;
 use RuntimeException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
@@ -15,8 +17,11 @@ class Connector implements ConnectorInterface
     /** @var Client */
     private $client;
 
-    /** @var  */
+    /** @var XMLReader */
     private $xmlReader;
+
+    /** @var XMLWriter */
+    private $xmlWriter;
 
     /**
      * Connector constructor.
@@ -32,6 +37,7 @@ class Connector implements ConnectorInterface
         ));
 
         $this->xmlReader = new XMLReader();
+        $this->xmlWriter = new XMLWriter();
     }
 
     /**
@@ -51,12 +57,123 @@ class Connector implements ConnectorInterface
             "Signature" => $credential->encodeSignature($signature)
         );
 
-        $requestBody = sprintf("<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body><Balance xmlns=\"http://indx.ru/\"><Request>%s</Request></Balance></soap:Body></soap:Envelope>", json_encode($body));
+        $body = $this->createXML(json_encode($body), "Balance");
 
         $request = new Request("POST", null, array(
             "SOAPAction" => "http://indx.ru/Balance"
-        ), $requestBody);
+        ), $body);
 
+        return $this->send($request);
+    }
+
+    /**
+     * @param Credential $credential
+     * @param string $culture
+     * @return mixed|null
+     */
+    public function getTools(Credential $credential, $culture = "ru-RU")
+    {
+        $signature = sprintf("%s;%s;%s", $credential->getLogin(), $credential->getPassword(), $culture);
+
+        $body = array(
+            "Login" => $credential->getLogin(),
+            "Wmid" => $credential->getWmid(),
+            "Culture" => $culture,
+            "Signature" => $credential->encodeSignature($signature)
+        );
+
+        $body = $this->createXML(json_encode($body), "Tools");
+
+        $request = new Request("POST", null, array(
+            "SOAPAction" => "http://indx.ru/Tools"
+        ), $body);
+
+        return $this->send($request);
+    }
+
+    /**
+     * @param Credential $credential
+     * @param int $symbolId
+     * @param DateTime $start
+     * @param DateTime $end
+     * @param string $culture
+     * @return mixed|null
+     */
+    public function getHistoryTrading(Credential $credential, $symbolId, DateTime $start, DateTime $end, $culture = "ru-RU")
+    {
+        $signature = sprintf(
+            "%s;%s;%s;%s;%s;%s;%s",
+            $credential->getLogin(),
+            $credential->getPassword(),
+            $culture,
+            $credential->getWmid(),
+            $symbolId,
+            $start->format("Ymd"),
+            $end->format("Ymd")
+        );
+
+        $body = array(
+            "Login" => $credential->getLogin(),
+            "Wmid" => $credential->getWmid(),
+            "Culture" => $culture,
+            "Signature" => $credential->encodeSignature($signature),
+            "Trading" => array(
+                "ID" => $symbolId,
+                "DateStart" => $start->format("Ymd"),
+                "DateEnd" => $end->format("Ymd")
+            )
+        );
+
+        $body = $this->createXML(json_encode($body), "HistoryTrading");
+
+        $request = new Request("POST", null, array(
+            "SOAPAction" => "http://indx.ru/HistoryTrading"
+        ), $body);
+
+        return $this->send($request);
+    }
+
+    /**
+     * @param string $requestContent
+     * @param string $action
+     * @return mixed
+     */
+    private function createXML($requestContent, $action)
+    {
+        $this->xmlWriter->openMemory();
+
+        $this->xmlWriter->startDocument("1.0", "utf-8");
+            $this->xmlWriter->startElementNS("soap", "Envelope", null);
+                $this->xmlWriter->startAttributeNS("xmlns", "xsi", null);
+                    $this->xmlWriter->text("http://www.w3.org/2001/XMLSchema-instance");
+                $this->xmlWriter->endAttribute();
+                $this->xmlWriter->startAttributeNS("xmlns", "xsd", null);
+                    $this->xmlWriter->text("http://www.w3.org/2001/XMLSchema");
+                $this->xmlWriter->endAttribute();
+                $this->xmlWriter->startAttributeNS("xmlns", "soap", null);
+                    $this->xmlWriter->text("http://schemas.xmlsoap.org/soap/envelope/");
+                $this->xmlWriter->endAttribute();
+                $this->xmlWriter->startElementNS("soap", "Body", null);
+                    $this->xmlWriter->startElement($action);
+                        $this->xmlWriter->startAttribute("xmlns");
+                            $this->xmlWriter->text("http://indx.ru/");
+                        $this->xmlWriter->endAttribute();
+                        $this->xmlWriter->startElement("Request");
+                            $this->xmlWriter->writeRaw($requestContent);
+                        $this->xmlWriter->endElement();
+                    $this->xmlWriter->endElement();
+            $this->xmlWriter->endElement();
+        $this->xmlWriter->endDocument();
+
+        return $this->xmlWriter->flush();
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed|null
+     */
+    private function send(Request $request)
+    {
         $response = $this->client->send($request);
 
         if ($response->getStatusCode() != 200) {

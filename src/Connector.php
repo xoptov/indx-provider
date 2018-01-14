@@ -256,6 +256,84 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * @param Credential $credential
+     * @param int $symbolId
+     * @param int $count
+     * @param float $price
+     * @param bool $isBid
+     * @param bool $isAnonymous
+     * @param string $culture
+     * @return StdClass
+     */
+    public function addOffer(Credential $credential, $symbolId, $count, $price, $isBid = true, $isAnonymous = true, $culture = "ru-RU")
+    {
+        $signature = sprintf(
+            "%s;%s;%s;%s;%d",
+            $credential->getLogin(),
+            $credential->getPassword(),
+            $culture,
+            $credential->getWmid(),
+            $symbolId
+        );
+
+        $body = array(
+            "Login" => $credential->getLogin(),
+            "Wmid" => $credential->getWmid(),
+            "Culture" => $culture,
+            "Signature" => $credential->encodeSignature($signature),
+            "Offer" => array(
+                "ID" => $symbolId,
+                "Count" => $count,
+                "IsAnonymous" => $isAnonymous,
+                "IsBid" => $isBid,
+                "Price" => $price
+            )
+        );
+
+        $body = $this->createXML(json_encode($body), "OfferAdd");
+
+        $request = new Request("POST", null, array(
+            "SOAPAction" => "http://indx.ru/OfferAdd"
+        ), $body);
+
+        return $this->send($request);
+    }
+
+    /**
+     * @param Credential $credential
+     * @param int $offerId
+     * @param string $culture
+     * @return StdClass
+     */
+    public function deleteOffer(Credential $credential, $offerId, $culture = "ru-RU")
+    {
+        $signature = sprintf(
+            "%s;%s;%s;%s;%d",
+            $credential->getLogin(),
+            $credential->getPassword(),
+            $culture,
+            $credential->getWmid(),
+            $offerId
+        );
+
+        $body = array(
+            "Login" => $credential->getLogin(),
+            "Wmid" => $credential->getWmid(),
+            "Culture" => $culture,
+            "Signature" => $credential->encodeSignature($signature),
+            "OfferID" => $offerId
+        );
+
+        $body = $this->createXML(json_encode($body), "OfferDelete");
+
+        $request = new Request("POST", null, array(
+            "SOAPAction" => "http://indx.ru/OfferDelete"
+        ), $body);
+
+        return $this->send($request);
+    }
+
+    /**
      * @param string $requestContent
      * @param string $action
      * @return mixed

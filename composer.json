@@ -24,6 +24,7 @@
     "require": {
         "ext-curl": "^7.0",
         "ext-xmlreader": "^7.0",
+        "ext-xmlwriter": "^7.0",
         "myclabs/deep-copy": "^1.7",
         "guzzlehttp/guzzle": "^6.3",
         "xoptov/trading-core": "dev-master"

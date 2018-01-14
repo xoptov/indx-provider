@@ -69,7 +69,8 @@ class Connector implements ConnectorInterface
     /**
      * @param Credential $credential
      * @param string $culture
-     * @return mixed|null
+     * @return stdClass
+     * @todo Don't work, need ask in INDX forum what is wrong with this method in service?
      */
     public function getTools(Credential $credential, $culture = "ru-RU")
     {
@@ -97,12 +98,12 @@ class Connector implements ConnectorInterface
      * @param DateTime $start
      * @param DateTime $end
      * @param string $culture
-     * @return mixed|null
+     * @return stdClass
      */
     public function getHistoryTrading(Credential $credential, $symbolId, DateTime $start, DateTime $end, $culture = "ru-RU")
     {
         $signature = sprintf(
-            "%s;%s;%s;%s;%s;%s;%s",
+            "%s;%s;%s;%s;%d;%s;%s",
             $credential->getLogin(),
             $credential->getPassword(),
             $culture,
@@ -131,6 +132,127 @@ class Connector implements ConnectorInterface
         ), $body);
 
         return $this->send($request);
+    }
+
+	/**
+	 * @param Credential $credential
+	 * @param int $symbolId
+	 * @param DateTime $start
+	 * @param DateTime $end
+	 * @param string $culture
+	 * @return stdClass
+	 */
+    public function getHistoryTransaction(Credential $credential, $symbolId, DateTime $start, DateTime $end, $culture = "ru-RU")
+    {
+		$signature = sprintf(
+			"%s;%s;%s;%s;%d;%s;%s",
+			$credential->getLogin(),
+			$credential->getPassword(),
+			$culture,
+			$credential->getWmid(),
+			$symbolId,
+			$start->format("Ymd"),
+			$end->format("Ymd")
+		);
+
+		$body = array(
+			"Login" => $credential->getLogin(),
+			"Wmid" => $credential->getWmid(),
+			"Culture" => $culture,
+			"Signature" => $credential->encodeSignature($signature),
+			"Trading" =>  array(
+				"ID" => $symbolId,
+				"DateStart" => $start->format("Ymd"),
+				"DateEnd" => $end->format("Ymd")
+			)
+		);
+
+		$body = $this->createXML(json_encode($body), "HistoryTransaction");
+
+	    $request = new Request("POST", null, array(
+		    "SOAPAction" => "http://indx.ru/HistoryTransaction"
+	    ), $body);
+
+	    return $this->send($request);
+    }
+
+	/**
+	 * @param Credential $credential
+	 * @param int $symbolId
+	 * @param DateTime $start
+	 * @param DateTime $end
+	 * @param string $culture
+	 * @return stdClass
+	 */
+    public function getOfferMy(Credential $credential, $symbolId, DateTime $start, DateTime $end, $culture = "ru-RU")
+    {
+		$signature = sprintf(
+			"%s;%s;%s;%s;%d;%s;%s",
+			$credential->getLogin(),
+			$credential->getPassword(),
+			$culture,
+			$credential->getWmid(),
+			$symbolId,
+			$start->format("Ymd"),
+			$end->format("Ymd")
+		);
+
+	    $body = array(
+		    "Login" => $credential->getLogin(),
+		    "Wmid" => $credential->getWmid(),
+		    "Culture" => $culture,
+		    "Signature" => $credential->encodeSignature($signature),
+		    "Trading" =>  array(
+			    "ID" => $symbolId,
+			    "DateStart" => $start->format("Ymd"),
+			    "DateEnd" => $end->format("Ymd")
+		    )
+	    );
+
+	    $body = $this->createXML(json_encode($body), "OfferMy");
+
+	    $request = new Request("POST", null, array(
+		    "SOAPAction" => "http://indx.ru/OfferMy"
+	    ), $body);
+
+	    return $this->send($request);
+    }
+
+	/**
+	 * @param Credential $credential
+	 * @param $symbolId
+	 * @param string $culture
+	 * @return stdClass
+	 * @todo Don't work, need ask in INDX forum what is wrong with this method in service?
+	 */
+    public function getOfferList(Credential $credential, $symbolId, $culture = "ru-RU")
+    {
+		$signature = sprintf(
+			"%s;%s;%s;%s;%d",
+			$credential->getLogin(),
+			$credential->getPassword(),
+			$culture,
+			$credential->getWmid(),
+			$symbolId
+		);
+
+		$body = array(
+			"Login" => $credential->getLogin(),
+			"Wmid" => $credential->getWmid(),
+			"Culture" => $culture,
+			"Signature" => $credential->encodeSignature($signature),
+			"Trading" => array(
+				"ID" => $symbolId
+			)
+		);
+
+	    $body = $this->createXML(json_encode($body), "OfferList");
+
+	    $request = new Request("POST", null, array(
+		    "SOAPAction" => "http://indx.ru/OfferList"
+	    ), $body);
+
+	    return $this->send($request);
     }
 
     /**
@@ -170,7 +292,7 @@ class Connector implements ConnectorInterface
 
     /**
      * @param Request $request
-     * @return mixed|null
+     * @return stdClass
      */
     private function send(Request $request)
     {
@@ -186,10 +308,15 @@ class Connector implements ConnectorInterface
 
         if ($this->xmlReader->read()) {
             $content = $this->xmlReader->readString();
+            $json = json_decode($content);
 
-            return json_decode($content);
+            if ($json->code == 0) {
+	            return $json;
+            }
+
+	        throw new BadResponseException(sprintf("Code: %d, Description: %s", $json->code, $json->desc), $request, $response);
         }
 
-        return null;
+	    throw new BadResponseException("Empty response body.", $request, $response);
     }
 }

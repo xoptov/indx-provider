@@ -4,7 +4,6 @@ namespace Xoptov\INDXConnector\Tests;
 
 use DateTime;
 use StdClass;
-use XMLReader;
 use ReflectionObject;
 use PHPUnit\Framework\TestCase;
 use Xoptov\INDXConnector\Connector;
@@ -23,19 +22,9 @@ class ConnectorTest extends TestCase
         $this->assertEquals(0, $result->code);
     }
 
-    public function testBalanceParseResponse()
-    {
-        $this->markTestIncomplete("Need make this test complete when all methods will be done.");
-
-        $data = ""; //TODO: place real data from exchange response.
-
-        $xmlReader = new XMLReader();
-        $xmlReader->XML($data);
-    }
-
     public function testGetTools()
     {
-        $this->markTestIncomplete("Need make this test complete when all methods will be done.");
+        $this->markTestIncomplete("Ask in forum what is wrong with this method?");
 
         $credential = new Credential(INDX_LOGIN, INDX_PASSWORD, INDX_WMID);
         $connector = new Connector("https://secure.indx.ru/api/v1/tradejson.asmx");
@@ -57,16 +46,38 @@ class ConnectorTest extends TestCase
         $this->assertEquals(0, $result->code);
     }
 
-    public function testCreateXML()
+    public function testGetHistoryTransaction()
     {
-        $this->markTestIncomplete("Need make this test complete when all methods will be done.");
+	    $credential = new Credential(INDX_LOGIN, INDX_PASSWORD, INDX_WMID);
+	    $connector = new Connector("https://secure.indx.ru/api/v1/tradejson.asmx");
 
-        $connector = new Connector(null);
-        $reflection = new ReflectionObject($connector);
-        $method = $reflection->getMethod("createXML");
-        $method->setAccessible(true);
-        $result = $method->invoke($connector, "test", "Balance");
+	    $result = $connector->getHistoryTrading($credential, SYMBOL_ID, new DateTime(TRADING_START), new DateTime(TRADING_END));
 
-        return;
+	    $this->assertInstanceOf(StdClass::class, $result);
+	    $this->assertEquals(0, $result->code);
     }
+
+	public function testGetOfferMy()
+	{
+		$credential = new Credential(INDX_LOGIN, INDX_PASSWORD, INDX_WMID);
+		$connector = new Connector("https://secure.indx.ru/api/v1/tradejson.asmx");
+
+		$result = $connector->getOfferMy($credential, SYMBOL_ID, new DateTime(TRADING_START), new DateTime(TRADING_END));
+
+		$this->assertInstanceOf(StdClass::class, $result);
+		$this->assertEquals(0, $result->code);
+	}
+
+	public function testGetOfferList()
+	{
+		$this->markTestIncomplete("Ask in forum what is wrong with this method?");
+
+		$credential = new Credential(INDX_LOGIN, INDX_PASSWORD, INDX_WMID);
+		$connector = new Connector("https://secure.indx.ru/api/v1/tradejson.asmx");
+
+		$result = $connector->getOfferList($credential, SYMBOL_ID);
+
+		$this->assertInstanceOf(StdClass::class, $result);
+		$this->assertEquals(0, $result->code);
+	}
 }

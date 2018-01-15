@@ -17,6 +17,9 @@ class Connector implements ConnectorInterface
     /** @var Client */
     private $client;
 
+    /** @var string */
+    private $userAgent = "INDXConnector v1.0, github.com/xoptov/indx-connector";
+
     /** @var XMLReader */
     private $xmlReader;
 
@@ -60,6 +63,7 @@ class Connector implements ConnectorInterface
         $body = $this->createXML(json_encode($body), "Balance");
 
         $request = new Request("POST", null, array(
+	        "User-Agent" => $this->userAgent,
             "SOAPAction" => "http://indx.ru/Balance"
         ), $body);
 
@@ -69,27 +73,39 @@ class Connector implements ConnectorInterface
     /**
      * @param Credential $credential
      * @param string $culture
-     * @return stdClass
      * @todo Don't work, need ask in INDX forum what is wrong with this method in service?
      */
     public function getTools(Credential $credential, $culture = "ru-RU")
     {
-        $signature = sprintf("%s;%s;%s", $credential->getLogin(), $credential->getPassword(), $culture);
+    	throw new RuntimeException("Method not work because broken on INDX.");
+    }
 
-        $body = array(
-            "Login" => $credential->getLogin(),
-            "Wmid" => $credential->getWmid(),
-            "Culture" => $culture,
-            "Signature" => $credential->encodeSignature($signature)
-        );
+	/**
+	 * @param bool $includeExpired
+	 * @param bool $tradedOnly
+	 * @return stdClass
+	 */
+    public function getSymbolList($includeExpired = false, $tradedOnly = true)
+    {
+    	$body = array(
+    		"includeExpired" => $includeExpired,
+		    "tradedOnly" => $tradedOnly
+	    );
 
-        $body = $this->createXML(json_encode($body), "Tools");
+    	$request = new Request("POST", "https://indx.ru/TradingStats.asmx/GetSymbolList", array(
+		    "Content-Type" => "application/json",
+		    "User-Agent" => $this->userAgent
+	    ), json_encode($body));
 
-        $request = new Request("POST", null, array(
-            "SOAPAction" => "http://indx.ru/Tools"
-        ), $body);
+		$response = $this->client->send($request);
 
-        return $this->send($request);
+	    if ($response->getStatusCode() != 200) {
+		    throw new BadResponseException("Bad request.", $request);
+	    }
+
+	    $result = json_decode($response->getBody());
+
+	    return $result;
     }
 
     /**
@@ -128,6 +144,7 @@ class Connector implements ConnectorInterface
         $body = $this->createXML(json_encode($body), "HistoryTrading");
 
         $request = new Request("POST", null, array(
+	        "User-Agent" => $this->userAgent,
             "SOAPAction" => "http://indx.ru/HistoryTrading"
         ), $body);
 
@@ -170,6 +187,7 @@ class Connector implements ConnectorInterface
 		$body = $this->createXML(json_encode($body), "HistoryTransaction");
 
 	    $request = new Request("POST", null, array(
+		    "User-Agent" => $this->userAgent,
 		    "SOAPAction" => "http://indx.ru/HistoryTransaction"
 	    ), $body);
 
@@ -212,6 +230,7 @@ class Connector implements ConnectorInterface
 	    $body = $this->createXML(json_encode($body), "OfferMy");
 
 	    $request = new Request("POST", null, array(
+		    "User-Agent" => $this->userAgent,
 		    "SOAPAction" => "http://indx.ru/OfferMy"
 	    ), $body);
 
@@ -219,11 +238,38 @@ class Connector implements ConnectorInterface
     }
 
 	/**
+	 * @param int $symbolId
+	 * @param bool $fullQueue
+	 * @return stdClass
+	 */
+    public function getOffer($symbolId, $fullQueue = false)
+    {
+    	$body = array(
+    		"symbolid" => $symbolId,
+		    "fullqueue" => $fullQueue
+	    );
+
+    	$request = new Request("POST", "https://indx.ru/TradingStats.asmx/GetOffers", array(
+		    "Content-Type" => "application/json",
+		    "User-Agent" => $this->userAgent
+	    ), json_encode($body));
+
+    	$response = $this->client->send($request);
+
+	    if ($response->getStatusCode() != 200) {
+		    throw new BadResponseException("Bad request.", $request);
+	    }
+
+	    $result = json_decode($response->getBody());
+
+	    return $result;
+    }
+
+	/**
 	 * @param Credential $credential
 	 * @param $symbolId
 	 * @param string $culture
 	 * @return stdClass
-	 * @todo Don't work, need ask in INDX forum what is wrong with this method in service?
 	 */
     public function getOfferList(Credential $credential, $symbolId, $culture = "ru-RU")
     {
@@ -249,6 +295,7 @@ class Connector implements ConnectorInterface
 	    $body = $this->createXML(json_encode($body), "OfferList");
 
 	    $request = new Request("POST", null, array(
+		    "User-Agent" => $this->userAgent,
 		    "SOAPAction" => "http://indx.ru/OfferList"
 	    ), $body);
 
@@ -293,6 +340,7 @@ class Connector implements ConnectorInterface
         $body = $this->createXML(json_encode($body), "OfferAdd");
 
         $request = new Request("POST", null, array(
+	        "User-Agent" => $this->userAgent,
             "SOAPAction" => "http://indx.ru/OfferAdd"
         ), $body);
 
@@ -327,6 +375,7 @@ class Connector implements ConnectorInterface
         $body = $this->createXML(json_encode($body), "OfferDelete");
 
         $request = new Request("POST", null, array(
+        	"User-Agent" => $this->userAgent,
             "SOAPAction" => "http://indx.ru/OfferDelete"
         ), $body);
 

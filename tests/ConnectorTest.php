@@ -23,7 +23,7 @@ class ConnectorTest extends TestCase
 
     public function testGetTools()
     {
-//        $this->markTestIncomplete("Ask in forum what is wrong with this method?");
+        $this->markTestIncomplete("Method not work on INDX.");
 
         $credential = new Credential(INDX_LOGIN, INDX_PASSWORD, INDX_WMID);
         $connector = new Connector("https://secure.indx.ru/api/v1/tradejson.asmx");
@@ -32,6 +32,14 @@ class ConnectorTest extends TestCase
 
         $this->assertInstanceOf(StdClass::class, $result);
         $this->assertEquals(0, $result->code);
+    }
+
+    public function testGetSymbolList()
+    {
+	    $connector = new Connector(null);
+	    $result = $connector->getSymbolList();
+
+	    $this->assertInstanceOf(StdClass::class, $result);
     }
 
     public function testGetHistoryTrading()
@@ -69,8 +77,6 @@ class ConnectorTest extends TestCase
 
 	public function testGetOfferList()
 	{
-//		$this->markTestIncomplete("Ask in forum what is wrong with this method?");
-
 		$credential = new Credential(INDX_LOGIN, INDX_PASSWORD, INDX_WMID);
 		$connector = new Connector("https://secure.indx.ru/api/v1/tradejson.asmx");
 
@@ -78,6 +84,14 @@ class ConnectorTest extends TestCase
 
 		$this->assertInstanceOf(StdClass::class, $result);
 		$this->assertEquals(0, $result->code);
+	}
+
+	public function testGetOffer()
+	{
+		$connector = new Connector(null);
+		$result = $connector->getOffer(SYMBOL_ID, true);
+
+		$this->assertInstanceOf(StdClass::class, $result);
 	}
 
     public function testAddOffer()

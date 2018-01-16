@@ -1,6 +1,6 @@
 {
     "name": "xoptov/indx-connector",
-    "description": "This is a API connector for INDX stock-exchange.",
+    "description": "This is API connector for INDX stock-exchange.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -28,7 +28,7 @@
         "ext-xmlwriter": "^7.0",
         "myclabs/deep-copy": "^1.7",
         "guzzlehttp/guzzle": "^6.3",
-        "xoptov/trading-core": "dev-master"
+        "xoptov/trading-core": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.4"

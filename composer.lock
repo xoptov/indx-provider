@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "1482f8655043f7d545be13f232d9819b",
+    "content-hash": "de06f3ea2fe228f6485c70b641a2ece4",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -308,11 +308,7 @@
                     "Xoptov\\TradingCore\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Xoptov\\TradingCore\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -324,10 +320,6 @@
                 }
             ],
             "description": "This is a core library for automation trading platform.",
-            "support": {
-                "source": "https://github.com/xoptov/trading-core/tree/master",
-                "issues": "https://github.com/xoptov/trading-core/issues"
-            },
             "time": "2017-12-17T20:16:07+00:00"
         }
     ],
@@ -1753,6 +1745,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
+        "php": "^7.0",
         "ext-curl": "^7.0",
         "ext-xmlreader": "^7.0",
         "ext-xmlwriter": "^7.0"

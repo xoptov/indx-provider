@@ -28,7 +28,7 @@
         "ext-xmlwriter": "^7.0",
         "myclabs/deep-copy": "^1.7",
         "guzzlehttp/guzzle": "^6.3",
-        "xoptov/trading-core": "^1.0"
+        "xoptov/trading-core": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.4"

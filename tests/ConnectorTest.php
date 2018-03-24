@@ -23,7 +23,7 @@ class ConnectorTest extends TestCase
 
     public function testGetTools()
     {
-        $this->markTestIncomplete("Method not work on INDX.");
+        $this->markTestSkipped("Method not work on INDX.");
 
         $credential = new Credential(INDX_LOGIN, INDX_PASSWORD, INDX_WMID);
         $connector = new Connector("https://secure.indx.ru/api/v1/tradejson.asmx");

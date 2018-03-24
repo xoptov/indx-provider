@@ -9,10 +9,12 @@ use XMLWriter;
 use RuntimeException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use Xoptov\TradingCore\ConnectorInterface;
 use GuzzleHttp\Exception\BadResponseException;
 
-class Connector implements ConnectorInterface
+/**
+ * Class for connecting to INDX exchange.
+ */
+class Connector
 {
     /** @var Client */
     private $client;
@@ -28,6 +30,7 @@ class Connector implements ConnectorInterface
 
     /**
      * Connector constructor.
+     *
      * @param string $baseUri
      */
     public function __construct($baseUri)
@@ -44,6 +47,8 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * Method for getting Balance from exchange.
+     *
      * @param Credential $credential
      * @param string $culture
      * @return StdClass|null
@@ -71,6 +76,8 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * Method for getting trading tools from exchange.
+     *
      * @param Credential $credential
      * @param string $culture
      * @todo Don't work, need ask in INDX forum what is wrong with this method in service?
@@ -81,6 +88,8 @@ class Connector implements ConnectorInterface
     }
 
 	/**
+     * Method for getting symbols list from exchange.
+     *
 	 * @param bool $includeExpired
 	 * @param bool $tradedOnly
 	 * @return stdClass
@@ -109,6 +118,8 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * Method for getting trading history for some symbol from exchange.
+     *
      * @param Credential $credential
      * @param int $symbolId
      * @param DateTime $start
@@ -152,6 +163,8 @@ class Connector implements ConnectorInterface
     }
 
 	/**
+     * Method for getting transaction history from exchange.
+     *
 	 * @param Credential $credential
 	 * @param int $symbolId
 	 * @param DateTime $start
@@ -195,6 +208,8 @@ class Connector implements ConnectorInterface
     }
 
 	/**
+     * Method for getting own offers from exchange.
+     *
 	 * @param Credential $credential
 	 * @param int $symbolId
 	 * @param DateTime $start
@@ -238,6 +253,8 @@ class Connector implements ConnectorInterface
     }
 
 	/**
+     * Method for getting offers for symbol from exchange.
+     *
 	 * @param int $symbolId
 	 * @param bool $fullQueue
 	 * @return stdClass
@@ -266,6 +283,8 @@ class Connector implements ConnectorInterface
     }
 
 	/**
+     * Method for getting offer list from exchange.
+     *
 	 * @param Credential $credential
 	 * @param $symbolId
 	 * @param string $culture
@@ -303,6 +322,8 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * Method for place offer of symbol to exchange.
+     *
      * @param Credential $credential
      * @param int $symbolId
      * @param int $count
@@ -348,6 +369,8 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * Method for delete offer from exchange.
+     *
      * @param Credential $credential
      * @param int $offerId
      * @param string $culture
@@ -383,6 +406,8 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * Method for creating xml body for enveloping request body.
+     *
      * @param string $requestContent
      * @param string $action
      * @return mixed
@@ -418,6 +443,8 @@ class Connector implements ConnectorInterface
     }
 
     /**
+     * Method for sending request to exchange API.
+     *
      * @param Request $request
      * @return stdClass
      */

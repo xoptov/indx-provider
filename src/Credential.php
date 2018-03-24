@@ -2,22 +2,47 @@
 
 namespace Xoptov\INDXConnector;
 
-use Xoptov\TradingCore\Security\Credential as BaseCredential;
-
-class Credential extends BaseCredential
+class Credential
 {
+    /** @var string */
+    private $login;
+
+    /** @var string */
+    private $password;
+
     /** @var string */
     private $wmid;
 
     /**
-     * {@inheritdoc}
+     * Constructor.
+     *
      * @param string $wmid
      */
     public function __construct($login, $password, $wmid)
     {
-        parent::__construct($login, $password);
-
+        $this->login = $login;
+        $this->password = $password;
         $this->wmid = $wmid;
+    }
+
+    /**
+     * Method for get login.
+     *
+     * @return string
+     */
+    public function getLogin()
+    {
+        return $this->login;
+    }
+
+    /**
+     * Method for get password.
+     *
+     * @return string
+     */
+    public function getPassword()
+    {
+        return $this->password;
     }
 
     /**
@@ -29,6 +54,8 @@ class Credential extends BaseCredential
     }
 
     /**
+     * Method for encoding signature for connection with API.
+     *
      * @param string $signature
      * @return string
      */
